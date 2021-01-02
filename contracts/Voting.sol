@@ -1,13 +1,17 @@
 pragma solidity ^0.8.0;
 
 contract Voting {
+    /// Адрес того, за кого голосуют
     address payable public beneficiary;
 
-    uint public biddingEnd;
+    /// Окончание возможности сделать голос
+    uint public votingEnd;
+    /// Окончание возможности раскрытия
     uint public revealEnd;
     /// Максимально возможное значение голоса
     uint public scaleMaxValue;
 
+    /// Имя того, за кого голосуют
     string public beneficiaryName;
 
     modifier checkBalance() {
@@ -26,14 +30,14 @@ contract Voting {
     }
 
     constructor(
-        uint _biddingTime,
+        uint _votingTime,
         uint _revealTime,
         uint _scaleMaxValue,
         address payable _beneficiary,
         string memory _beneficiaryName
     ) {
-        biddingEnd = block.timestamp + _biddingTime;
-        revealEnd = biddingEnd + _revealTime;
+        votingEnd = block.timestamp + _votingTime;
+        revealEnd = votingEnd + _revealTime;
         scaleMaxValue = _scaleMaxValue;
         beneficiary = _beneficiary;
         beneficiaryName = _beneficiaryName;
