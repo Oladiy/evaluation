@@ -14,13 +14,19 @@
 
 # **Build**
 
-#TODO
+`truffle build`
 
 # **Run**
 
-#TODO
+Запустите в отдельном терминале
+
+`ganache-cli`
+
+Задеплойте контракт
+
+`truffle deploy`
 
 # **Test**
-Запуск тестов на Javascript и Solidity
+Запуск тестов на JavaScript и Solidity
 
 `truffle test`
