@@ -1,24 +1,24 @@
 pragma solidity ^0.8.0;
 
-contract Voting {
+contract CommitRevealEvaluation {
     /// Адрес того, за кого голосуют
     address payable public beneficiary;
 
     /// Таблица тех, кто голосовал
-    mapping(address => bool) public voters;
+    mapping(address => bool) public evaluators;
 
     /// Таблица голос + депозит
-    mapping(address => Vote) public votes;
+    mapping(address => Evaluation) public evaluations;
 
     /// Окончание возможности сделать голос
-    uint public votingEnd;
+    uint public evaluationEnd;
     /// Окончание возможности раскрытия
     uint public revealEnd;
     /// Максимально возможное значение голоса
     uint public scaleMaxValue;
 
-    struct Vote {
-        string vote;
+    struct Evaluation {
+        string evaluation;
         uint deposit;
     }
 
@@ -30,8 +30,8 @@ contract Voting {
         _;
     }
 
-    modifier checkDidNotVote() {
-        require(!voters[msg.sender]);
+    modifier checkDidNotEvaluate() {
+        require(!evaluators[msg.sender]);
         _;
     }
 
@@ -46,49 +46,49 @@ contract Voting {
     }
 
     constructor(
-        uint _votingTime,
+        uint _evaluationTime,
         uint _revealTime,
         uint _scaleMaxValue,
         address payable _beneficiary,
         string memory _beneficiaryName
     ) {
-        votingEnd = block.timestamp + _votingTime;
-        revealEnd = votingEnd + _revealTime;
+        evaluationEnd = block.timestamp + _evaluationTime;
+        revealEnd = evaluationEnd + _revealTime;
         scaleMaxValue = _scaleMaxValue;
         beneficiary = _beneficiary;
         beneficiaryName = _beneficiaryName;
     }
 
     /// Выставить оценку beneficiary.
-    /// _vote нужно задать = keccak256(abi.encodePacked(value, fake, secret))
+    /// _evaluate нужно задать = keccak256(abi.encodePacked(value, fake, secret))
     /// Невозможно отменить выставленную оценку. Невозможно оценить дважды.
-    function vote(
-        string memory _vote // возможно нужно bytes32 - подумать!
+    function evaluate(
+        string memory _evaluation // возможно нужно bytes32 - подумать!
     )
     public
     payable
-    onlyBefore(votingEnd)
+    onlyBefore(evaluationEnd)
     checkBalance()
-    checkDidNotVote()
+    checkDidNotEvaluate()
     {
-        votes[msg.sender] = Vote({
-            vote: _vote,
+        evaluations[msg.sender] = Evaluation({
+            evaluation: _evaluation,
             deposit: msg.value
         });
-        voters[msg.sender] = true;
+        evaluators[msg.sender] = true;
     }
 
     function reveal(
 
     )
     public
-    onlyAfter(votingEnd)
+    onlyAfter(evaluationEnd)
     onlyBefore(revealEnd)
     {
 
     }
 
-    function endVoting(
+    function endEvaluation(
 
     )
     public
