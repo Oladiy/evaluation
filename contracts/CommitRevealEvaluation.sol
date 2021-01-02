@@ -97,6 +97,7 @@ contract CommitRevealEvaluation {
 
     }
 
+    /// Проверить снаружи, произошло ли какое-то событие относительно block.timestamp
     function isHappened(uint _time)
     public
     view
