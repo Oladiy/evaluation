@@ -22,7 +22,7 @@ contract Voting {
         uint deposit;
     }
 
-    /// Имя того, за кого голосуют
+    /// Имя того, за кого голосуют (beneficiary)
     string public beneficiaryName;
 
     modifier checkBalance() {
@@ -59,7 +59,7 @@ contract Voting {
         beneficiaryName = _beneficiaryName;
     }
 
-    /// Выставить оценку.
+    /// Выставить оценку beneficiary.
     /// _vote нужно задать = keccak256(abi.encodePacked(value, fake, secret))
     /// Невозможно отменить выставленную оценку. Невозможно оценить дважды.
     function vote(
