@@ -59,6 +59,9 @@ contract Voting {
         beneficiaryName = _beneficiaryName;
     }
 
+    /// Выставить оценку.
+    /// _vote нужно задать = keccak256(abi.encodePacked(value, fake, secret))
+    /// Невозможно отменить выставленную оценку. Невозможно оценить дважды.
     function vote(
         string memory _vote // возможно нужно bytes32 - подумать!
     )
@@ -92,5 +95,13 @@ contract Voting {
     onlyAfter(revealEnd)
     {
 
+    }
+
+    function isHappened(uint _time)
+    public
+    view
+    returns (bool)
+    {
+        return (block.timestamp >= _time);
     }
 }
