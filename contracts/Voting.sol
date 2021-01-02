@@ -10,6 +10,21 @@ contract Voting {
 
     string public beneficiaryName;
 
+    modifier checkBalance() {
+        require(msg.sender.balance >= scaleMaxValue);
+        _;
+    }
+
+    modifier onlyBefore(uint _time) {
+        require(block.timestamp < _time);
+        _;
+    }
+
+    modifier onlyAfter(uint _time) {
+        require(block.timestamp > _time);
+        _;
+    }
+
     constructor(
         uint _biddingTime,
         uint _revealTime,
