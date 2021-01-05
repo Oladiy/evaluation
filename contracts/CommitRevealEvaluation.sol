@@ -13,7 +13,7 @@ contract CommitRevealEvaluation {
     /// true, если оценивание закончилось
     bool public evaluationEnded;
 
-    /// Таблица тех, кто оценивал
+    /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
     /// Таблица тех, кто сделал reveal
     mapping(address => bool) public evaluatorsRevealed;
