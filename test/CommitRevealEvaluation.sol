@@ -7,7 +7,7 @@ import "truffle/AssertUint.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/CommitRevealEvaluation.sol";
 
-contract TestVoting {
+contract TestEvaluation {
     CommitRevealEvaluation evaluation = CommitRevealEvaluation(
         DeployedAddresses.CommitRevealEvaluation()
     );
@@ -25,9 +25,37 @@ contract TestVoting {
         address secondJury = 0x2c61097258C54cE52143224a5169cA082A6c7203;
         address thirdJury = 0x5C9b7ce8b884f5D988578d3B58DcBCF8Fa15F758;
         address fakeJury = 0x67fDea9dFACc29a20aef5Cd0B833B7d0485AeDfd;
-        AssertBool.equal(evaluation.juries(firstJury), true, "Check if jury address is marked as true after deploying contract");
-        AssertBool.equal(evaluation.juries(secondJury), true, "Check if jury address is marked as true after deploying contract");
-        AssertBool.equal(evaluation.juries(thirdJury), true, "Check if jury address is marked as true after deploying contract");
-        AssertBool.equal(evaluation.juries(fakeJury), false, "Check if fake jury address is marked as false after deploying contract");
+        AssertBool.isTrue(evaluation.juries(firstJury), "Check if jury address is marked as true after deploying contract");
+        AssertBool.isTrue(evaluation.juries(secondJury), "Check if jury address is marked as true after deploying contract");
+        AssertBool.isTrue(evaluation.juries(thirdJury), "Check if jury address is marked as true after deploying contract");
+        AssertBool.isFalse(evaluation.juries(fakeJury), "Check if fake jury address is marked as false after deploying contract");
+    }
+
+    function testEvaluate() public {
+        if (evaluation.isHappened(evaluation.evaluationEnd()) ||
+            !evaluation.evaluators(msg.sender)
+        ) {
+            return;
+        }
+
+        uint value = 9;
+        bool fake = false;
+        string memory secret = "s3cr37";
+
+        bytes32 evaluationHash = keccak256(abi.encodePacked(value, fake, secret));
+        uint evaluationSumBeforeEvaluate = evaluation.evaluationSum();
+
+        payable(address(evaluation)).transfer(10);
+        evaluation.evaluate(evaluationHash);
+
+        AssertBool.equal(evaluation.evaluators(msg.sender), true, "Should be marked as true after evaluate");
+    }
+
+    function testReveal() public {
+
+    }
+
+    function testEndEvaluation() public {
+
     }
 }
