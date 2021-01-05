@@ -1,28 +1,39 @@
 pragma solidity ^0.7.0;
 
 contract CommitRevealEvaluation {
-    /// Адрес того, за кого голосуют
-    address payable public beneficiary;
+    event EvaluationEnded(address participant, uint result, string participantName);
 
-    /// Таблица тех, кто голосовал
-    mapping(address => bool) public evaluators;
-    /// Таблица голос + депозит
-    mapping(address => Evaluation) public evaluations;
+    /// Адрес того, кого оценивают
+    address payable public beneficiary;
     /// Адреса жюри
+    address payable [] public juriesList;
+
+    /// true, если оценивание закончилось
+    bool public evaluationEnded;
+
+    /// Таблица тех, кто оценивал
+    mapping(address => bool) public evaluators;
+    /// Таблица тех, кто сделал reveal
+    mapping(address => bool) public evaluatorsRevealed;
+    /// Таблица оценка + депозит
+    mapping(address => Evaluation) public evaluations;
+    /// mapping адресов жюри, чтобы быстро проверить, есть ли они в списке
     mapping(address => bool) public juries;
 
-    /// Окончание возможности сделать голос
+    /// Окончание возможности оценить
     uint public evaluationEnd;
     /// Окончание возможности раскрытия
     uint public revealEnd;
-    /// Максимально возможное значение голоса
+    /// Максимально возможное значение оценки
     uint public scaleMaxValue;
     /// Сумма всех оценок
     uint public evaluationSum;
     /// Количество жюри
     uint public juriesAmount;
+    /// Итоговая оценка (среднее арифметическое)
+    uint public result;
 
-    /// Имя того, за кого голосуют (beneficiary)
+    /// Имя того, кого оценивают (beneficiary)
     string public beneficiaryName;
 
     struct Evaluation {
@@ -64,7 +75,9 @@ contract CommitRevealEvaluation {
         beneficiary = _beneficiary;
         beneficiaryName = _beneficiaryName;
 
-        for (uint i = 0; i < _juries.length; ++i) {
+        juriesList = _juries;
+        juriesAmount = _juries.length;
+        for (uint i = 0; i < juriesAmount; ++i) {
             juries[_juries[i]] = true;
         }
     }
@@ -83,6 +96,7 @@ contract CommitRevealEvaluation {
     {
         /// Проверка, если ли msg.sender в списке жюри
         require(juries[msg.sender]);
+        require(msg.value >= scaleMaxValue);
 
         evaluations[msg.sender] = Evaluation({
             evaluation: _evaluation,
@@ -111,15 +125,56 @@ contract CommitRevealEvaluation {
         }
 
         evaluationSum += value;
+        evaluatorsRevealed[msg.sender] = true;
     }
 
-    function endEvaluation(
-
-    )
+    function endEvaluation()
     public
     onlyAfter(revealEnd)
     {
+        require(!evaluationEnded);
 
+        // TODO нормально посчитать result, чтобы потом оформить refund
+        result = evaluationSum / juriesAmount;
+
+        emit EvaluationEnded(beneficiary, result, beneficiaryName);
+        evaluationEnded = true;
+
+        refund();
+        beneficiary.transfer(result);
+    }
+
+    /// Подсчет и возват средств жюри, которые выходят за границу result
+    function refund()
+    internal
+    {
+        uint deposit;
+        address payable jury;
+        uint length = juriesList.length;
+        // TODO нормально посчитать value, чтобы потом оформить refund
+        uint value = result / juriesAmount;
+        uint refundAmount;
+
+        for (uint i = 0; i < length; i++) {
+            jury = payable(juriesList[i]);
+
+            if (!evaluatorsRevealed[jury]) {
+                continue;
+            }
+
+            deposit = evaluations[jury].deposit;
+
+            if (deposit <= value) {
+                continue;
+            }
+
+            refundAmount = deposit - value;
+
+            // Защищаемся от double-spending
+            evaluations[jury].deposit = 0;
+            jury.transfer(refundAmount);
+            refundAmount = 0;
+        }
     }
 
     /// Проверить снаружи, произошло ли какое-то событие относительно block.timestamp
