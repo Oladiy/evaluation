@@ -6,6 +6,7 @@ import "truffle/AssertString.sol";
 import "truffle/AssertUint.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/CommitRevealEvaluation.sol";
+import "../contracts/abdk-libraries-solidity/ABDKMathQuad.sol";
 
 contract TestVoting {
     CommitRevealEvaluation evaluation = CommitRevealEvaluation(

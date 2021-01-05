@@ -11,9 +11,13 @@
 
 `npm install -g ganache-cli`
 
-`git clone https://github.com/Oladiy/voting`
+`git clone https://github.com/Oladiy/evaluation`
+
+`cd evaluation`
 
 `npm install`
+
+`git clone https://github.com/abdk-consulting/abdk-libraries-solidity.git`
 
 # **Build**
 
