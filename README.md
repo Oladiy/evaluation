@@ -17,6 +17,8 @@
 
 `npm install`
 
+`cd contracts`
+
 `git clone https://github.com/abdk-consulting/abdk-libraries-solidity.git`
 
 # **Build**
