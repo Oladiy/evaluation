@@ -130,6 +130,10 @@ contract CommitRevealEvaluation {
         evaluatorsRevealed[msg.sender] = true;
     }
 
+    /// Окончание оценивания.
+    /// Вычисляется среднее арифметическое всех оценок.
+    /// Результат переводится beneficiary, причем сумма равномерно распределяется между жюри.
+    /// Остатки возвращаются на счета жюри в зависимости от их депозита.
     function endEvaluation()
     public
     onlyAfter(revealEnd)
@@ -186,6 +190,7 @@ contract CommitRevealEvaluation {
         return (block.timestamp >= _time);
     }
 
+    /// Выполняем деление, используя библиотеку ABDKMathQuad
     function divide(
         uint numerator,
         uint denominator
