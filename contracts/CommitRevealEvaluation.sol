@@ -1,5 +1,7 @@
 pragma solidity ^0.7.0;
 
+import "./abdk-libraries-solidity/ABDKMathQuad.sol";
+
 contract CommitRevealEvaluation {
     event EvaluationEnded(address participant, uint result, string participantName);
 
@@ -134,8 +136,7 @@ contract CommitRevealEvaluation {
     {
         require(!evaluationEnded);
 
-        // TODO нормально посчитать result, чтобы потом оформить refund
-        result = evaluationSum / juriesAmount;
+        result = divide(evaluationSum, juriesAmount);
 
         emit EvaluationEnded(beneficiary, result, beneficiaryName);
         evaluationEnded = true;
@@ -151,8 +152,7 @@ contract CommitRevealEvaluation {
         uint deposit;
         address payable jury;
         uint length = juriesList.length;
-        // TODO нормально посчитать value, чтобы потом оформить refund
-        uint value = result / juriesAmount;
+        uint value = divide(result, juriesAmount);
         uint refundAmount;
 
         for (uint i = 0; i < length; i++) {
@@ -184,5 +184,21 @@ contract CommitRevealEvaluation {
     returns (bool)
     {
         return (block.timestamp >= _time);
+    }
+
+    function divide(
+        uint numerator,
+        uint denominator
+    )
+    internal
+    pure
+    returns (uint)
+    {
+        return ABDKMathQuad.toUInt(
+            ABDKMathQuad.div(
+                ABDKMathQuad.fromUInt(numerator),
+                ABDKMathQuad.fromUInt(denominator)
+            )
+        );
     }
 }
