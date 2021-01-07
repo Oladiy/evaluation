@@ -17,6 +17,9 @@ contract CommitRevealEvaluation {
     /// true, если оценивание закончилось
     bool public evaluationEnded;
 
+    /// Баланс по умолчанию [Токены]
+    uint constant public DEFAULT_TOKEN_BALANCE = 100000;
+
     /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
     /// Таблица тех, кто сделал reveal
@@ -25,6 +28,8 @@ contract CommitRevealEvaluation {
     mapping(address => Evaluation) public evaluations;
     /// mapping адресов жюри, чтобы быстро проверить, есть ли они в списке
     mapping(address => bool) public juries;
+    /// Балансы жюри [Токены]
+    mapping(address => uint) public balances;
 
     /// Окончание возможности оценить
     uint public evaluationEnd;
@@ -48,22 +53,17 @@ contract CommitRevealEvaluation {
     }
 
     modifier checkBalance() {
-        require(msg.sender.balance >= scaleMaxValue);
-        _;
-    }
-
-    modifier checkDidNotEvaluate() {
-        require(!evaluators[msg.sender]);
+        require(balances[msg.sender] >= scaleMaxValue, "Balance is less than scale max value");
         _;
     }
 
     modifier onlyBefore(uint _time) {
-        require(block.timestamp < _time);
+        require(block.timestamp < _time, "Only before is required");
         _;
     }
 
     modifier onlyAfter(uint _time) {
-        require(block.timestamp > _time);
+        require(block.timestamp > _time, "Only after is required");
         _;
     }
 
@@ -86,6 +86,7 @@ contract CommitRevealEvaluation {
         juriesAmount = _juries.length;
         for (uint i = 0; i < juriesAmount; ++i) {
             juries[_juries[i]] = true;
+            balances[_juries[i]] = DEFAULT_TOKEN_BALANCE;
         }
     }
 
@@ -97,17 +98,17 @@ contract CommitRevealEvaluation {
     )
     public
     payable
-    onlyBefore(evaluationEnd)
+    //onlyBefore(evaluationEnd)
     checkBalance()
-    checkDidNotEvaluate()
     {
         /// Проверка, если ли msg.sender в списке жюри
-        require(juries[msg.sender]);
-        require(msg.value >= scaleMaxValue);
+        require(juries[msg.sender], "Caller is not the jury");
+        /// Проверка, что жюри еще не оценил
+        require(!evaluators[msg.sender], "Jury has already evaluated");
 
         evaluations[msg.sender] = Evaluation({
             evaluation: _evaluation,
-            deposit: msg.value
+            deposit: balances[msg.sender]
         });
         evaluators[msg.sender] = true;
     }
@@ -124,9 +125,9 @@ contract CommitRevealEvaluation {
     onlyBefore(revealEnd)
     {
         /// Проверка, если ли msg.sender в списке жюри
-        require(juries[msg.sender]);
+        require(juries[msg.sender], "Caller is not the jury");
         /// Проверка, что жюри еще не сделал reveal
-        require(!evaluatorsRevealed[msg.sender]);
+        require(!evaluatorsRevealed[msg.sender], "Jury has already revealed");
 
         /// Проверка, что раскрыто то значение, которое загадывалось
         if (evaluations[msg.sender].evaluation != keccak256(abi.encodePacked(value, fake, secret))) {
@@ -145,7 +146,7 @@ contract CommitRevealEvaluation {
     public
     onlyAfter(revealEnd)
     {
-        require(!evaluationEnded);
+        require(!evaluationEnded, "Evaluation hasn't been ended yet");
 
         result = divide(evaluationSum, juriesAmount);
 
@@ -180,10 +181,8 @@ contract CommitRevealEvaluation {
 
             refundAmount = deposit - value;
 
-            // Защищаемся от double-spending
             evaluations[jury].deposit = 0;
-            //jury.transfer(refundAmount);
-            refundAmount = 0;
+            balances[jury] += refundAmount;
         }
     }
 
@@ -193,7 +192,7 @@ contract CommitRevealEvaluation {
     )
     public
     {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "Caller is not the owner");
         require(!juries[_jury]);
 
         juriesList.push(_jury);
@@ -207,7 +206,7 @@ contract CommitRevealEvaluation {
     )
     public
     {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "Caller is not the owner");
         require(juries[_jury]);
 
         juries[_jury] = false;
@@ -225,10 +224,14 @@ contract CommitRevealEvaluation {
     }
 
     /// Сброс баланса до значения по умолчанию
-    function resetJuryBalance()
+    function resetJuryBalance(
+        address _jury
+    )
     public
     {
+        require(msg.sender == owner, "Caller is not the owner");
 
+        balances[_jury] = DEFAULT_TOKEN_BALANCE;
     }
 
     /// Проверить снаружи, произошло ли какое-то событие относительно block.timestamp
@@ -237,7 +240,7 @@ contract CommitRevealEvaluation {
     view
     returns (bool)
     {
-        return (block.timestamp >= _time);
+        return block.timestamp >= _time;
     }
 
     /// Выполняем деление, используя библиотеку ABDKMathQuad
