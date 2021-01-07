@@ -38,10 +38,12 @@ contract("CommitRevealEvaluation", accounts => {
 
         const isHappenedEvaluationEnd = await evaluation.isHappened.call(await evaluation.evaluationEnd.call());
         const isEvaluator = await evaluation.evaluators.call(accounts[0]);
+        const isJury = await evaluation.juries.call(accounts[0]);
 
         if (isHappenedEvaluationEnd ||
-            isEvaluator
-        ){
+            isEvaluator ||
+            !isJury
+        ) {
             return;
         }
 
@@ -49,11 +51,15 @@ contract("CommitRevealEvaluation", accounts => {
         const fake = false;
         const secret = "s3cr37";
 
-        const evaluationHash = "something";
+        const evaluationHash = web3.utils.soliditySha3(
+            {t: 'uint', v: value},
+            {t: 'bool', v: fake},
+            {t: 'string', v: secret},
+        );
 
-//        await evaluation.evaluate.call(evaluationHash);
+        await evaluation.evaluate(evaluationHash);
 
-//        assert.isTrue(await evaluation.evaluators(accounts[0]), "Should be marked as true after evaluate");
+        assert.isTrue(await evaluation.evaluators.call(accounts[0]), "Should be marked as true after evaluate");
     });
 
     it("Test reveal function", async () => {
@@ -62,16 +68,18 @@ contract("CommitRevealEvaluation", accounts => {
         const isHappenedEvaluationEnd = await evaluation.isHappened.call(await evaluation.evaluationEnd.call());
         const isHappenedRevealEnd = await evaluation.isHappened.call(await evaluation.revealEnd.call());
         const isRevealed = await evaluation.evaluatorsRevealed(accounts[0]);
+        const isJury = await evaluation.juries.call(accounts[0]);
 
         if (!isHappenedEvaluationEnd ||
             isHappenedRevealEnd ||
-            isRevealed
+            isRevealed ||
+            !isJury
         ) {
             return;
         }
 
         assert.isFalse(await evaluation.evaluatorsRevealed(accounts[0]), "Should be marked as false before reveal");
-        const evaluationSumBeforeReveal = await evaluatoin.evaluationSum.call();
+        const evaluationSumBeforeReveal = await evaluation.evaluationSum.call();
 
         const value = 9;
         const fake = false;
@@ -79,10 +87,10 @@ contract("CommitRevealEvaluation", accounts => {
 
         await evaluation.reveal(value, fake, secret);
 
-        const evaluationSumAfterReveal = await evaluatoin.evaluationSum.call();
+        const evaluationSumAfterReveal = await evaluation.evaluationSum.call();
 
-        assert.isTrue(evaluationSumAfterReveal > evaluationSumBeforeReveal, "After reveal evaluation sum should be greater than until");
-        assert.isTrue(await evaluation.evaluatorsRevealed.call(accoutnts[0]), "Should be marked as false before reveal");
+        assert.isTrue(evaluationSumAfterReveal.toNumber() > evaluationSumBeforeReveal.toNumber(), "After reveal evaluation sum should be greater than until");
+        assert.isTrue(await evaluation.evaluatorsRevealed.call(accounts[0]), "Should be marked as false before reveal");
     });
 
     it("Test end evaluation function", async () => {
