@@ -31,11 +31,14 @@
 
 `ganache-cli`
 
+**Для успешного тестирования, при запуске ganache-cli необходимо взять из секции Available Accounts адрес (0) и добавить его в файл `migrations/2_deploy_contracts.js` на строку 13.**
+
 Задеплойте контракт
 
 `truffle deploy`
 
-# **Test**
+# **Test** 
+
 Запуск тестов на JavaScript и Solidity
 
 `truffle test`

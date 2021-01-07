@@ -37,9 +37,11 @@ contract("CommitRevealEvaluation", accounts => {
 
         const isHappenedEvaluationEnd = await evaluation.isHappened.call(await evaluation.evaluationEnd.call());
         const isEvaluator = await evaluation.evaluators.call(accounts[0]);
+        const isJury = await evaluation.evaluators.call(accounts[0]);
 
         if (isHappenedEvaluationEnd ||
-            isEvaluator
+            isEvaluator ||
+            !isJury
         ) {
             return;
         }
