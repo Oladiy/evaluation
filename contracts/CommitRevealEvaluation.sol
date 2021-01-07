@@ -15,6 +15,9 @@ contract CommitRevealEvaluation {
     /// true, если оценивание закончилось
     bool public evaluationEnded;
 
+    /// Баланс по умолчанию
+    uint constant public DEFAULT_BALANCE = 100;
+
     /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
     /// Таблица тех, кто сделал reveal
@@ -184,6 +187,58 @@ contract CommitRevealEvaluation {
             jury.transfer(refundAmount);
             refundAmount = 0;
         }
+    }
+
+    /// Добавить жюри в список
+    function addJury(
+        address payable _jury
+    )
+    public
+    {
+        require(msg.sender == owner);
+
+        // Если такой жюри уже есть - выходим
+        if (juries[_jury]) {
+            return;
+        }
+
+        juriesList.push(_jury);
+        juries[_jury] = true;
+        juriesAmount++;
+    }
+
+    /// Удалить жюри из списка
+    function removeJury(
+        address payable _jury
+    )
+    public
+    {
+        require(msg.sender == owner);
+
+        // Если адреса нет - выходим
+        if (!juries[_jury]) {
+            return;
+        }
+
+        juries[_jury] = false;
+        evaluators[_jury] = false;
+        evaluatorsRevealed[_jury] = false;
+        evaluations[_jury].deposit = 0;
+
+        for (uint i = 0; i < juriesAmount; ++i) {
+            if (_jury != juriesList[i]) {
+                continue;
+            }
+            delete juriesList[i];
+        }
+        juriesAmount--;
+    }
+
+    /// Сброс баланса до значения по умолчанию
+    function resetJuryBalance()
+    public
+    {
+
     }
 
     /// Проверить снаружи, произошло ли какое-то событие относительно block.timestamp
