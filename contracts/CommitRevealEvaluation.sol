@@ -9,6 +9,8 @@ contract CommitRevealEvaluation {
     address payable public beneficiary;
     /// Адреса жюри
     address payable [] public juriesList;
+    /// Адрес владельца контракта
+    address public owner;
 
     /// true, если оценивание закончилось
     bool public evaluationEnded;
@@ -71,6 +73,7 @@ contract CommitRevealEvaluation {
         string memory _beneficiaryName,
         address payable [] memory _juries
     ) {
+        owner = msg.sender;
         evaluationEnd = block.timestamp + _evaluationTime;
         revealEnd = evaluationEnd + _revealTime;
         scaleMaxValue = _scaleMaxValue;
