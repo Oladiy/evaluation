@@ -10,13 +10,10 @@ contract CommitRevealEvaluation {
     /// Адреса жюри
     address payable [] public juriesList;
     /// Адрес владельца контракта
-    address public owner;
+    address payable public owner;
 
     /// true, если оценивание закончилось
     bool public evaluationEnded;
-
-    /// Баланс по умолчанию
-    uint constant public DEFAULT_BALANCE = 100;
 
     /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
@@ -191,14 +188,15 @@ contract CommitRevealEvaluation {
 
     /// Добавить жюри в список
     function addJury(
-        address payable _jury
+        address _jury
     )
     public
     {
         require(msg.sender == owner);
-        require(juries[_jury]);
+        require(!juries[_jury]);
 
-        juriesList.push(_jury);
+        juriesList.push(payable(_jury));
+
         juries[_jury] = true;
         juriesAmount++;
     }
@@ -210,7 +208,7 @@ contract CommitRevealEvaluation {
     public
     {
         require(msg.sender == owner);
-        require(!juries[_jury]);
+        require(juries[_jury]);
 
         juries[_jury] = false;
         evaluators[_jury] = false;
