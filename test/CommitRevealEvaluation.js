@@ -1,4 +1,3 @@
-const ETHUtil = require("ethereumjs-util");
 const Web3 = require("web3");
 
 const CommitRevealEvaluation = artifacts.require("CommitRevealEvaluation");
