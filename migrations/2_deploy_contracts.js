@@ -10,7 +10,7 @@ module.exports = function (deployer) {
             "0xD0D1597614662cf53C1ADA223D9268b984B68714",
             "0x2c61097258C54cE52143224a5169cA082A6c7203",
             "0x5C9b7ce8b884f5D988578d3B58DcBCF8Fa15F758",
-            "0x54Ae4d047EaB333E8B06Aad80511B31781F5E258",
+            "0x573a9Fd9837550bed9053d74B34B4A0A91ad14D2",
         ]);
     deployer.deploy(ABDKMathQuad);
 };
