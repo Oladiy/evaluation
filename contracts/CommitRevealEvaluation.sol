@@ -159,11 +159,10 @@ contract CommitRevealEvaluation {
     {
         uint deposit;
         address jury;
-        uint length = juriesList.length;
         uint value = divide(result, juriesAmount);
         uint refundAmount;
 
-        for (uint i = 0; i < length; i++) {
+        for (uint i = 0; i < juriesAmount; i++) {
             jury = juriesList[i];
 
             if (!evaluatorsRevealed[jury]) {
