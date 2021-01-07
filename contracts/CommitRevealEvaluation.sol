@@ -196,6 +196,7 @@ contract CommitRevealEvaluation {
 
         juriesList.push(_jury);
         juries[_jury] = true;
+        balances[_jury] = DEFAULT_TOKEN_BALANCE;
         juriesAmount++;
     }
 
