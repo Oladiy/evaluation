@@ -12,7 +12,6 @@ contract TestEvaluation {
         DeployedAddresses.CommitRevealEvaluation()
     );
 
-
     address firstJury = 0xD0D1597614662cf53C1ADA223D9268b984B68714;
     address secondJury = 0x2c61097258C54cE52143224a5169cA082A6c7203;
     address thirdJury = 0x5C9b7ce8b884f5D988578d3B58DcBCF8Fa15F758;
