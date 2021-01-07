@@ -120,6 +120,8 @@ contract CommitRevealEvaluation {
     {
         /// Проверка, если ли msg.sender в списке жюри
         require(juries[msg.sender]);
+        /// Проверка, что жюри еще не сделал reveal
+        require(!evaluatorsRevealed[msg.sender]);
 
         /// Проверка, что раскрыто то значение, которое загадывалось
         if (evaluations[msg.sender].evaluation != keccak256(abi.encodePacked(value, fake, secret))) {
