@@ -33,7 +33,7 @@ contract("CommitRevealEvaluation", accounts => {
         assert.isFalse(await evaluation.juries(fakeJury), "Check if fake jury address is marked as false after deploying contract");
     });
 
-    it("Test evaluate function", async() => {
+    it("Test evaluate function", async () => {
         const evaluation = await CommitRevealEvaluation.deployed();
 
         const isHappenedEvaluationEnd = await evaluation.isHappened.call(await evaluation.evaluationEnd.call());
@@ -56,7 +56,36 @@ contract("CommitRevealEvaluation", accounts => {
 //        assert.isTrue(await evaluation.evaluators(accounts[0]), "Should be marked as true after evaluate");
     });
 
-    it("Test end evaluation function", async() => {
+    it("Test reveal function", async () => {
+        const evaluation = await CommitRevealEvaluation.deployed();
+
+        const isHappenedEvaluationEnd = await evaluation.isHappened.call(await evaluation.evaluationEnd.call());
+        const isHappenedRevealEnd = await evaluation.isHappened.call(await evaluation.revealEnd.call());
+        const isRevealed = await evaluation.evaluatorsRevealed(accounts[0]);
+
+        if (!isHappenedEvaluationEnd ||
+            isHappenedRevealEnd ||
+            isRevealed
+        ) {
+            return;
+        }
+
+        assert.isFalse(await evaluation.evaluatorsRevealed(accounts[0]), "Should be marked as false before reveal");
+        const evaluationSumBeforeReveal = await evaluatoin.evaluationSum.call();
+
+        const value = 9;
+        const fake = false;
+        const secret = "s3cr37";
+
+        await evaluation.reveal(value, fake, secret);
+
+        const evaluationSumAfterReveal = await evaluatoin.evaluationSum.call();
+
+        assert.isTrue(evaluationSumAfterReveal > evaluationSumBeforeReveal, "After reveal evaluation sum should be greater than until");
+        assert.isTrue(await evaluation.evaluatorsRevealed.call(accoutnts[0]), "Should be marked as false before reveal");
+    });
+
+    it("Test end evaluation function", async () => {
         const evaluation = await CommitRevealEvaluation.deployed();
 
         const isHappenedRevealEnd = await evaluation.isHappened.call(await evaluation.revealEnd.call());
