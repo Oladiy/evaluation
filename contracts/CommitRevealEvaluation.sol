@@ -7,10 +7,9 @@ contract CommitRevealEvaluation {
 
     /// Адрес того, кого оценивают
     address payable public beneficiary;
-    /// Адреса жюри
-    address payable [] public juriesList;
+    address[] juriesList;
     /// Адрес владельца контракта
-    address payable public owner;
+    address public owner;
 
     /// true, если оценивание закончилось
     bool public evaluationEnded;
@@ -71,7 +70,7 @@ contract CommitRevealEvaluation {
         uint _scaleMaxValue,
         address payable _beneficiary,
         string memory _beneficiaryName,
-        address payable [] memory _juries
+        address [] memory _juries
     ) {
         owner = msg.sender;
         evaluationEnd = block.timestamp + _evaluationTime;
@@ -159,13 +158,13 @@ contract CommitRevealEvaluation {
     internal
     {
         uint deposit;
-        address payable jury;
+        address jury;
         uint length = juriesList.length;
         uint value = divide(result, juriesAmount);
         uint refundAmount;
 
         for (uint i = 0; i < length; i++) {
-            jury = payable(juriesList[i]);
+            jury = juriesList[i];
 
             if (!evaluatorsRevealed[jury]) {
                 continue;
@@ -181,7 +180,7 @@ contract CommitRevealEvaluation {
 
             // Защищаемся от double-spending
             evaluations[jury].deposit = 0;
-            jury.transfer(refundAmount);
+            //jury.transfer(refundAmount);
             refundAmount = 0;
         }
     }
@@ -195,15 +194,14 @@ contract CommitRevealEvaluation {
         require(msg.sender == owner);
         require(!juries[_jury]);
 
-        juriesList.push(payable(_jury));
-
+        juriesList.push(_jury);
         juries[_jury] = true;
         juriesAmount++;
     }
 
     /// Удалить жюри из списка
     function removeJury(
-        address payable _jury
+        address _jury
     )
     public
     {
