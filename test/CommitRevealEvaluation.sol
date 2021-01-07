@@ -93,17 +93,4 @@ contract TestEvaluation {
         AssertUint.equal(secondJuryDeposit, expectedDepositAfterRefund, "Must be reset to zero");
         AssertUint.equal(thirdJuryDeposit, expectedDepositAfterRefund, "Must be reset to zero");
     }
-
-    function testAddAndRemoveJury() public {
-        address payable randomJury = 0xb81Ee96348370104C0B3B815d3926B8e0A9E9F72;
-        AssertAddress.equal(evaluation.owner(), msg.sender, "please");
-        /*
-        if (!evaluation.juries(randomJury)) {
-            evaluation.addJury(randomJury);
-            AssertBool.isTrue(evaluation.juries(randomJury), "Should be marked as true after add action");
-        }
-
-        evaluation.removeJury(randomJury);
-        AssertBool.isFalse(evaluation.juries(randomJury), "Should be marked as false after remove action"); */
-    }
 }
