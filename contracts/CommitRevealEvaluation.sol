@@ -97,8 +97,7 @@ contract CommitRevealEvaluation {
         bytes32 _evaluation
     )
     public
-    payable
-    //onlyBefore(evaluationEnd)
+    onlyBefore(evaluationEnd)
     checkBalance()
     {
         /// Проверка, если ли msg.sender в списке жюри
