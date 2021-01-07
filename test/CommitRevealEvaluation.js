@@ -1,4 +1,8 @@
+const ETHUtil = require("ethereumjs-util");
+const Web3 = require("web3");
+
 const CommitRevealEvaluation = artifacts.require("CommitRevealEvaluation");
+const web3 = new Web3();
 
 contract("CommitRevealEvaluation", accounts => {
     const firstJury = "0xD0D1597614662cf53C1ADA223D9268b984B68714";
@@ -50,6 +54,33 @@ contract("CommitRevealEvaluation", accounts => {
 //        await evaluation.evaluate.call(evaluationHash);
 
 //        assert.isTrue(await evaluation.evaluators(accounts[0]), "Should be marked as true after evaluate");
+    });
+
+    it("Test end evaluation function", async() => {
+        const evaluation = await CommitRevealEvaluation.deployed();
+
+        const isHappenedRevealEnd = await evaluation.isHappened.call(await evaluation.revealEnd.call());
+        const isEvaluationEnded = await evaluation.evaluationEnded.call();
+
+        if (!isHappenedRevealEnd ||
+            isEvaluationEnded
+        ) {
+            return;
+        }
+
+        await evaluation.endEvaluation();
+
+        assert.isTrue(await evaluation.evaluationEnded.call(), "After evaluation ending that variable should be true");
+
+        const expectedDepositAfterRefund = 0;
+
+        const firstJuryDeposit = (await evaluation.evaluations(firstJury)).deposit.toNumber();
+        const secondJuryDeposit = (await evaluation.evaluations(secondJury)).deposit.toNumber();
+        const thirdJuryDeposit = (await evaluation.evaluations(thirdJury)).deposit.toNumber();
+
+        assert.equal(firstJuryDeposit, expectedDepositAfterRefund, "Must be reset to zero");
+        assert.equal(secondJuryDeposit, expectedDepositAfterRefund, "Must be reset to zero");
+        assert.equal(thirdJuryDeposit, expectedDepositAfterRefund, "Must be reset to zero");
     });
 
     it("Add and then remove jury", async () => {
