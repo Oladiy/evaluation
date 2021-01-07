@@ -1,26 +1,41 @@
 # **Project description**
 
-Инициатор деплоит контракт, в котором задает шкалу голосования, имя, за кого голосуют, и адрес, куда будут переводиться деньги. 
-В ходе голосования участники присылают хэш(оценка + nonce).
-По итогу голосования вычисляется средняя оценка и сумма этой оценке, отправляется по адресу beneficiary. 
+Реализация выставления оценок комиссией.
+
+Инициатор деплоит контракт, в котором задает время на оценивание, шкалу голосования, 
+имя, за кого голосуют (beneficiary), адрес, куда будут переводиться деньги, и список адресов жюри. 
+В ходе голосования жюри присылают оценку.
+По итогу голосования по адресу beneficiary отправляется сумма, равная среднему арифметическому от всех оценок.
 
 # **Install**
 
 `npm install -g ganache-cli`
 
-`git clone https://github.com/Oladiy/voting`
+`git clone https://github.com/Oladiy/evaluation`
+
+`cd evaluation`
 
 `npm install`
 
+`cd contracts`
+
+`git clone https://github.com/abdk-consulting/abdk-libraries-solidity.git`
+
 # **Build**
 
-#TODO
+`truffle build`
 
 # **Run**
 
-#TODO
+Запустите в отдельном терминале
+
+`ganache-cli`
+
+Задеплойте контракт
+
+`truffle deploy`
 
 # **Test**
-Запуск тестов на Javascript и Solidity
+Запуск тестов на JavaScript и Solidity
 
 `truffle test`
