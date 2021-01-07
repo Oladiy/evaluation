@@ -47,10 +47,9 @@ contract("CommitRevealEvaluation", accounts => {
 
         const evaluationHash = "something";
 
-        // transfer
-        //await evaluation.evaluate.call(evaluationHash);
+//        await evaluation.evaluate.call(evaluationHash);
 
-        //assert.isTrue(await evaluation.evaluators(accounts[0]), "Should be marked as true after evaluate");
+//        assert.isTrue(await evaluation.evaluators(accounts[0]), "Should be marked as true after evaluate");
     });
 
     it("Add and then remove jury", async () => {
@@ -59,13 +58,13 @@ contract("CommitRevealEvaluation", accounts => {
         const randomJury = "0xb81Ee96348370104C0B3B815d3926B8e0A9E9F72";
 
         if (!(await evaluation.juries.call(randomJury))) {
-            await evaluation.addJury.call(randomJury);
+            await evaluation.addJury(randomJury);
             const isJuryInList = await evaluation.juries.call(randomJury);
 
             assert.isTrue(isJuryInList, "Should be marked as true after add action");
         }
 
-        await evaluation.removeJury.call(randomJury);
+        await evaluation.removeJury(randomJury);
         assert.isFalse(await evaluation.juries.call(randomJury), "Should be marked as false after remove action");
     });
 });
