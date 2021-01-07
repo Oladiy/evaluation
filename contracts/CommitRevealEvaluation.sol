@@ -1,8 +1,11 @@
 pragma solidity ^0.7.0;
 
 import "./abdk-libraries-solidity/ABDKMathQuad.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract CommitRevealEvaluation {
+    using SafeMath for uint256;
+
     event EvaluationEnded(address participant, uint result, string participantName);
 
     /// Адрес того, кого оценивают
