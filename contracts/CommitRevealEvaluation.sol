@@ -1,17 +1,24 @@
 pragma solidity ^0.7.0;
 
 import "./abdk-libraries-solidity/ABDKMathQuad.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract CommitRevealEvaluation {
+    using SafeMath for uint256;
+
     event EvaluationEnded(address participant, uint result, string participantName);
 
     /// Адрес того, кого оценивают
     address payable public beneficiary;
-    /// Адреса жюри
-    address payable [] public juriesList;
+    address[] juriesList;
+    /// Адрес владельца контракта
+    address public owner;
 
     /// true, если оценивание закончилось
     bool public evaluationEnded;
+
+    /// Баланс по умолчанию [Токены]
+    uint constant public DEFAULT_TOKEN_BALANCE = 100000;
 
     /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
@@ -21,6 +28,8 @@ contract CommitRevealEvaluation {
     mapping(address => Evaluation) public evaluations;
     /// mapping адресов жюри, чтобы быстро проверить, есть ли они в списке
     mapping(address => bool) public juries;
+    /// Балансы жюри [Токены]
+    mapping(address => uint) public balances;
 
     /// Окончание возможности оценить
     uint public evaluationEnd;
@@ -44,22 +53,17 @@ contract CommitRevealEvaluation {
     }
 
     modifier checkBalance() {
-        require(msg.sender.balance >= scaleMaxValue);
-        _;
-    }
-
-    modifier checkDidNotEvaluate() {
-        require(!evaluators[msg.sender]);
+        require(balances[msg.sender] >= scaleMaxValue, "Balance is less than scale max value");
         _;
     }
 
     modifier onlyBefore(uint _time) {
-        require(block.timestamp < _time);
+        require(block.timestamp < _time, "Only before is required");
         _;
     }
 
     modifier onlyAfter(uint _time) {
-        require(block.timestamp > _time);
+        require(block.timestamp > _time, "Only after is required");
         _;
     }
 
@@ -69,8 +73,9 @@ contract CommitRevealEvaluation {
         uint _scaleMaxValue,
         address payable _beneficiary,
         string memory _beneficiaryName,
-        address payable [] memory _juries
+        address [] memory _juries
     ) {
+        owner = msg.sender;
         evaluationEnd = block.timestamp + _evaluationTime;
         revealEnd = evaluationEnd + _revealTime;
         scaleMaxValue = _scaleMaxValue;
@@ -81,6 +86,7 @@ contract CommitRevealEvaluation {
         juriesAmount = _juries.length;
         for (uint i = 0; i < juriesAmount; ++i) {
             juries[_juries[i]] = true;
+            balances[_juries[i]] = DEFAULT_TOKEN_BALANCE;
         }
     }
 
@@ -91,18 +97,17 @@ contract CommitRevealEvaluation {
         bytes32 _evaluation
     )
     public
-    payable
     onlyBefore(evaluationEnd)
     checkBalance()
-    checkDidNotEvaluate()
     {
         /// Проверка, если ли msg.sender в списке жюри
-        require(juries[msg.sender]);
-        require(msg.value >= scaleMaxValue);
+        require(juries[msg.sender], "Caller is not the jury");
+        /// Проверка, что жюри еще не оценил
+        require(!evaluators[msg.sender], "Jury has already evaluated");
 
         evaluations[msg.sender] = Evaluation({
             evaluation: _evaluation,
-            deposit: msg.value
+            deposit: balances[msg.sender]
         });
         evaluators[msg.sender] = true;
     }
@@ -119,9 +124,9 @@ contract CommitRevealEvaluation {
     onlyBefore(revealEnd)
     {
         /// Проверка, если ли msg.sender в списке жюри
-        require(juries[msg.sender]);
+        require(juries[msg.sender], "Caller is not the jury");
         /// Проверка, что жюри еще не сделал reveal
-        require(!evaluatorsRevealed[msg.sender]);
+        require(!evaluatorsRevealed[msg.sender], "Jury has already revealed");
 
         /// Проверка, что раскрыто то значение, которое загадывалось
         if (evaluations[msg.sender].evaluation != keccak256(abi.encodePacked(value, fake, secret))) {
@@ -140,7 +145,7 @@ contract CommitRevealEvaluation {
     public
     onlyAfter(revealEnd)
     {
-        require(!evaluationEnded);
+        require(!evaluationEnded, "Evaluation hasn't been ended yet");
 
         result = divide(evaluationSum, juriesAmount);
 
@@ -156,13 +161,12 @@ contract CommitRevealEvaluation {
     internal
     {
         uint deposit;
-        address payable jury;
-        uint length = juriesList.length;
+        address jury;
         uint value = divide(result, juriesAmount);
         uint refundAmount;
 
-        for (uint i = 0; i < length; i++) {
-            jury = payable(juriesList[i]);
+        for (uint i = 0; i < juriesAmount; i++) {
+            jury = juriesList[i];
 
             if (!evaluatorsRevealed[jury]) {
                 continue;
@@ -176,11 +180,58 @@ contract CommitRevealEvaluation {
 
             refundAmount = deposit - value;
 
-            // Защищаемся от double-spending
             evaluations[jury].deposit = 0;
-            jury.transfer(refundAmount);
-            refundAmount = 0;
+            balances[jury] += refundAmount;
         }
+    }
+
+    /// Добавить жюри в список
+    function addJury(
+        address _jury
+    )
+    public
+    {
+        require(msg.sender == owner, "Caller is not the owner");
+        require(!juries[_jury]);
+
+        juriesList.push(_jury);
+        juries[_jury] = true;
+        balances[_jury] = DEFAULT_TOKEN_BALANCE;
+        juriesAmount++;
+    }
+
+    /// Удалить жюри из списка
+    function removeJury(
+        address _jury
+    )
+    public
+    {
+        require(msg.sender == owner, "Caller is not the owner");
+        require(juries[_jury]);
+
+        juries[_jury] = false;
+        evaluators[_jury] = false;
+        evaluatorsRevealed[_jury] = false;
+        evaluations[_jury].deposit = 0;
+
+        for (uint i = 0; i < juriesAmount; ++i) {
+            if (_jury != juriesList[i]) {
+                continue;
+            }
+            delete juriesList[i];
+        }
+        juriesAmount--;
+    }
+
+    /// Сброс баланса до значения по умолчанию
+    function resetJuryBalance(
+        address _jury
+    )
+    public
+    {
+        require(msg.sender == owner, "Caller is not the owner");
+
+        balances[_jury] = DEFAULT_TOKEN_BALANCE;
     }
 
     /// Проверить снаружи, произошло ли какое-то событие относительно block.timestamp
@@ -189,7 +240,7 @@ contract CommitRevealEvaluation {
     view
     returns (bool)
     {
-        return (block.timestamp >= _time);
+        return block.timestamp >= _time;
     }
 
     /// Выполняем деление, используя библиотеку ABDKMathQuad
