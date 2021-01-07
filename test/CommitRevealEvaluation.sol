@@ -26,6 +26,7 @@ contract TestEvaluation {
         AssertString.equal(evaluation.beneficiaryName(), expectedBeneficiaryName, "Compare beneficiary name after deploying contract");
 
         address fakeJury = 0x67fDea9dFACc29a20aef5Cd0B833B7d0485AeDfd;
+
         AssertBool.isTrue(evaluation.juries(firstJury), "Check if jury address is marked as true after deploying contract");
         AssertBool.isTrue(evaluation.juries(secondJury), "Check if jury address is marked as true after deploying contract");
         AssertBool.isTrue(evaluation.juries(thirdJury), "Check if jury address is marked as true after deploying contract");
@@ -45,7 +46,6 @@ contract TestEvaluation {
 
         bytes32 evaluationHash = keccak256(abi.encodePacked(value, fake, secret));
 
-        payable(address(evaluation)).transfer(10);
         evaluation.evaluate(evaluationHash);
 
         AssertBool.equal(evaluation.evaluators(msg.sender), true, "Should be marked as true after evaluate");
@@ -54,7 +54,8 @@ contract TestEvaluation {
     function testReveal() public {
         if (!evaluation.isHappened(evaluation.evaluationEnd()) ||
             evaluation.isHappened(evaluation.revealEnd()) ||
-            evaluation.evaluatorsRevealed(msg.sender)
+            evaluation.evaluatorsRevealed(msg.sender) ||
+            !evaluation.juries(msg.sender)
         ) {
             return;
         }
@@ -65,6 +66,7 @@ contract TestEvaluation {
         uint value = 9;
         bool fake = false;
         string memory secret = "s3cr37";
+
         evaluation.reveal(value, fake, secret);
 
         uint evaluationSumAfterReveal = evaluation.evaluationSum();
@@ -84,7 +86,6 @@ contract TestEvaluation {
         AssertBool.isTrue(evaluation.evaluationEnded(), "After evaluation ending that variable should be true");
 
         uint expectedDepositAfterRefund = 0;
-
         (bytes32 firstJuryEvaluation, uint firstJuryDeposit) = evaluation.evaluations(firstJury);
         (bytes32 secondJuryEvaluation, uint secondJuryDeposit) = evaluation.evaluations(secondJury);
         (bytes32 thirdJuryEvaluation, uint thirdJuryDeposit) = evaluation.evaluations(thirdJury);
