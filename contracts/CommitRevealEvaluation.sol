@@ -196,11 +196,7 @@ contract CommitRevealEvaluation {
     public
     {
         require(msg.sender == owner);
-
-        // Если такой жюри уже есть - выходим
-        if (juries[_jury]) {
-            return;
-        }
+        require(juries[_jury]);
 
         juriesList.push(_jury);
         juries[_jury] = true;
@@ -214,11 +210,7 @@ contract CommitRevealEvaluation {
     public
     {
         require(msg.sender == owner);
-
-        // Если адреса нет - выходим
-        if (!juries[_jury]) {
-            return;
-        }
+        require(!juries[_jury]);
 
         juries[_jury] = false;
         evaluators[_jury] = false;
