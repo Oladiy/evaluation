@@ -89,7 +89,7 @@ contract("CommitRevealEvaluation", accounts => {
         const evaluationSumAfterReveal = await evaluation.evaluationSum.call();
 
         assert.isTrue(evaluationSumAfterReveal.toNumber() > evaluationSumBeforeReveal.toNumber(), "After reveal evaluation sum should be greater than until");
-        assert.isTrue(await evaluation.evaluatorsRevealed.call(accounts[0]), "Should be marked as false before reveal");
+        assert.isTrue(await evaluation.evaluatorsRevealed.call(accounts[0]), "Should be marked as true before reveal");
     });
 
     it("Test end evaluation function", async () => {
