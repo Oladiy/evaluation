@@ -8,13 +8,13 @@ contract CommitRevealEvaluation {
 
     event EvaluationEnded(address participant, uint result, string participantName);
 
-    /// Адрес того, кого оценивают
+    /// Адрес оцениваемого
     address payable public beneficiary;
     address[] juriesList;
     /// Адрес владельца контракта
     address public owner;
 
-    /// true, если оценивание закончилось
+    /// true, если оценивание закончилось и beneficiary вынесен вердикт
     bool public evaluationEnded;
 
     /// Баланс по умолчанию [Токены]
@@ -22,11 +22,11 @@ contract CommitRevealEvaluation {
 
     /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
-    /// Таблица тех, кто сделал reveal
+    /// Таблица жюри, которые сделали reveal
     mapping(address => bool) public evaluatorsRevealed;
     /// Таблица оценка + депозит
     mapping(address => Evaluation) public evaluations;
-    /// mapping адресов жюри, чтобы быстро проверить, есть ли они в списке
+    /// Адреса жюри
     mapping(address => bool) public juries;
     /// Балансы жюри [Токены]
     mapping(address => uint) public balances;
@@ -44,7 +44,7 @@ contract CommitRevealEvaluation {
     /// Итоговая оценка (среднее арифметическое)
     uint public result;
 
-    /// Имя того, кого оценивают (beneficiary)
+    /// Имя оцениваемого (beneficiary)
     string public beneficiaryName;
 
     struct Evaluation {
@@ -92,6 +92,8 @@ contract CommitRevealEvaluation {
 
     /// Выставить оценку beneficiary.
     /// _evaluate нужно задать = keccak256(abi.encodePacked(value, fake, secret)).
+    /// value - uint; fake - bool: false, если выставляемая оценка не используется "для проверки", иначе - true;
+    /// secret - string (nonce).
     /// Невозможно отменить выставленную оценку. Невозможно оценить дважды.
     function evaluate(
         bytes32 _evaluation
@@ -100,9 +102,9 @@ contract CommitRevealEvaluation {
     onlyBefore(evaluationEnd)
     checkBalance()
     {
-        /// Проверка, если ли msg.sender в списке жюри
+        // Проверка, если ли msg.sender в списке жюри
         require(juries[msg.sender], "Caller is not the jury");
-        /// Проверка, что жюри еще не оценил
+        // Проверка, что жюри еще не оценил
         require(!evaluators[msg.sender], "Jury has already evaluated");
 
         evaluations[msg.sender] = Evaluation({
@@ -113,7 +115,7 @@ contract CommitRevealEvaluation {
     }
 
     /// Раскрытие оценки.
-    /// Если раскрыто то значение, которое загадывалось - оно прибавляется к evaluationSum.
+    /// Если раскрыто то значение, которое было в хеше - оно прибавляется к evaluationSum.
     function reveal(
         uint value,
         bool fake,
@@ -123,12 +125,11 @@ contract CommitRevealEvaluation {
     onlyAfter(evaluationEnd)
     onlyBefore(revealEnd)
     {
-        /// Проверка, если ли msg.sender в списке жюри
+        // Проверка, если ли msg.sender в списке жюри
         require(juries[msg.sender], "Caller is not the jury");
-        /// Проверка, что жюри еще не сделал reveal
+        // Проверка, что жюри еще не сделал reveal
         require(!evaluatorsRevealed[msg.sender], "Jury has already revealed");
 
-        /// Проверка, что раскрыто то значение, которое загадывалось
         if (evaluations[msg.sender].evaluation != keccak256(abi.encodePacked(value, fake, secret))) {
             return;
         }
@@ -140,7 +141,7 @@ contract CommitRevealEvaluation {
     /// Окончание оценивания.
     /// Вычисляется среднее арифметическое всех оценок.
     /// Результат переводится beneficiary, причем сумма равномерно распределяется между жюри.
-    /// Остатки возвращаются на счета жюри в зависимости от их депозита.
+    /// Остатки возвращаются на балансы жюри в зависимости от их депозита.
     function endEvaluation()
     public
     onlyAfter(revealEnd)
@@ -156,7 +157,7 @@ contract CommitRevealEvaluation {
         beneficiary.transfer(result);
     }
 
-    /// Подсчет и возват средств жюри, которые выходят за границу result
+    /// Подсчет и возват средств жюри
     function refund()
     internal
     {
@@ -168,7 +169,10 @@ contract CommitRevealEvaluation {
         for (uint i = 0; i < juriesAmount; i++) {
             jury = juriesList[i];
 
+            // Если жюри не прошел reveal - сокращаем баланс вдвоем и обнуляем депозит
             if (!evaluatorsRevealed[jury]) {
+                balances[jury] = divide(balances[jury], 2);
+                evaluations[jury].deposit = 0;
                 continue;
             }
 
@@ -230,7 +234,6 @@ contract CommitRevealEvaluation {
     public
     {
         require(msg.sender == owner, "Caller is not the owner");
-
         balances[_jury] = DEFAULT_TOKEN_BALANCE;
     }
 
