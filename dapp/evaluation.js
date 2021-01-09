@@ -103,7 +103,7 @@ app.get('/spectator/', async (request, response) => {
                     response.send(`Failed to get evaluation sum: ${err}`);
                 }
             });
-        response.send(`Сумма всех оценок на данный момент: ${evaluationSum}`);
+        response.send(`Evaluation sum at the moment: ${evaluationSum}`);
     }
 
     if (request.query['address']) {
