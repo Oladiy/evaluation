@@ -19,6 +19,8 @@ contract CommitRevealEvaluation {
 
     /// Баланс по умолчанию [Токены]
     uint constant public DEFAULT_TOKEN_BALANCE = 100000;
+    /// Предельное количество жюри
+    uint constant public JURIES_AMOUNT_MAX = 1000;
 
     /// Таблица жюри, которые сделали evaluate
     mapping(address => bool) public evaluators;
@@ -83,7 +85,12 @@ contract CommitRevealEvaluation {
         beneficiaryName = _beneficiaryName;
 
         juriesList = _juries;
-        juriesAmount = _juries.length;
+        if (_juries.length > JURIES_AMOUNT_MAX) {
+            juriesAmount = JURIES_AMOUNT_MAX;
+        } else {
+            juriesAmount = _juries.length;
+        }
+
         for (uint i = 0; i < juriesAmount; ++i) {
             juries[_juries[i]] = true;
             balances[_juries[i]] = DEFAULT_TOKEN_BALANCE;
