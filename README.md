@@ -44,7 +44,7 @@
 
 `nodejs dapp/evaluation.js`
 
-И перейдите по по http://localhost:5002
+И перейдите по http://localhost:5002
 
 # **Test** 
 
