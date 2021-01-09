@@ -155,11 +155,11 @@ contract CommitRevealEvaluation {
 
         result = divide(evaluationSum, juriesAmount);
 
-        emit EvaluationEnded(beneficiary, result, beneficiaryName);
         evaluationEnded = true;
 
         refund();
         beneficiary.transfer(result);
+        emit EvaluationEnded(beneficiary, result, beneficiaryName);
     }
 
     /// Подсчет и возват средств жюри
