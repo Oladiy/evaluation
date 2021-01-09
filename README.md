@@ -40,6 +40,12 @@
 
 `truffle deploy`
 
+Для запуска демонстрационного DApp запустите сервер
+
+`nodejs dapp/evaluation.js`
+
+И перейдите по по http://localhost:5002
+
 # **Test** 
 
 Запуск тестов на JavaScript и Solidity
