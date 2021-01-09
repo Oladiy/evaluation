@@ -24,6 +24,8 @@
 
 `git clone https://github.com/abdk-consulting/abdk-libraries-solidity.git`
 
+`cd ..`
+
 # **Build**
 
 `truffle build`
