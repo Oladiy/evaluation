@@ -162,10 +162,10 @@ contract CommitRevealEvaluation {
 
         result = divide(evaluationSum, juriesAmount);
 
-        evaluationEnded = true;
-
         refund();
         beneficiary.transfer(result);
+
+        evaluationEnded = true;
         emit EvaluationEnded(beneficiary, result, beneficiaryName);
     }
 
