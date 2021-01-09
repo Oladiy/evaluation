@@ -3,7 +3,7 @@ const ABDKMathQuad = artifacts.require("ABDKMathQuad");
 
 module.exports = function (deployer) {
     deployer.deploy(CommitRevealEvaluation,
-        100, 300, 10,
+        1000, 3000, 10,
         "0x10E1Be9F6A5aD767b6fbB9ab32cEA8cf208f1543",
         "Anthony Zuc",
         [

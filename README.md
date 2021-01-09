@@ -24,6 +24,8 @@
 
 `git clone https://github.com/abdk-consulting/abdk-libraries-solidity.git`
 
+`cd ..`
+
 # **Build**
 
 `truffle build`
@@ -39,6 +41,12 @@
 Задеплойте контракт
 
 `truffle deploy`
+
+Для запуска демонстрационного DApp запустите сервер
+
+`nodejs dapp/evaluation.js`
+
+И перейдите по http://localhost:5002
 
 # **Test** 
 
