@@ -92,6 +92,7 @@ contract CommitRevealEvaluation {
         juriesList.push(owner);
         juries[owner] = true;
         balances[owner] = DEFAULT_TOKEN_BALANCE;
+        juriesAmount++;
     }
 
     /// Выставить оценку beneficiary.
