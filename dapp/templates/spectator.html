@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluation</title>
+</head>
+<body>
+Role: spectator
+
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="owner">
+    <button type="submit">Get contract owner</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="scale">
+    <button type="submit">Get scale max value</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="evaluation_end">
+    <button type="submit">Is evaluation time ended?</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="reveal_end">
+    <button type="submit">Is reveal time ended?</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="evaluation_ended">
+    <button type="submit">Is evaluation ended?</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="juries_amount">
+    <button type="submit">Get juries amount</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <input type="hidden" name="request" value="evaluation_sum">
+    <button type="submit">Get evaluation sum</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/spectator/">
+    <label for="juries">Address:</label>
+    <input type="text" id="juries" name="address" value="0xD0D1597614662cf53C1ADA223D9268b984B68714">
+    <button type="submit">Check if address belongs to juries list</button>
+</form>
+<br><br>
+<form method="GET" action="http://localhost:5002/">
+    <button type="submit">Main menu</button>
+</form>
+<br><br>
+</body>
+</html>
