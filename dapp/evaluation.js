@@ -31,7 +31,7 @@ app.get('/spectator/', async (request, response) => {
                     response.send(`Failed to get owner: ${err}`);
                 }
             });
-        response.send(`${owner}`);
+        response.send(`Contract owner: ${owner}`);
     }
 
     if (request.query['request'] === 'scale') {
@@ -41,7 +41,7 @@ app.get('/spectator/', async (request, response) => {
                     response.send(`Failed to get scale max value: ${err}`);
                 }
             });
-        response.send(`${scaleMaxValue}`);
+        response.send(`Scale max value: ${scaleMaxValue}`);
     }
 
     if (request.query['request'] === 'evaluation_end') {
@@ -93,7 +93,7 @@ app.get('/spectator/', async (request, response) => {
                     response.send(`Failed to get juries amount: ${err}`);
                 }
             });
-        response.send(`${juriesAmount}`);
+        response.send(`Juries amount: ${juriesAmount}`);
     }
 
     if (request.query['request'] === 'evaluation_sum') {
@@ -103,7 +103,7 @@ app.get('/spectator/', async (request, response) => {
                     response.send(`Failed to get evaluation sum: ${err}`);
                 }
             });
-        response.send(`${evaluationSum}`);
+        response.send(`Сумма всех оценок на данный момент: ${evaluationSum}`);
     }
 
     if (request.query['address']) {
