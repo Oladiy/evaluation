@@ -114,10 +114,10 @@ app.get('/spectator/', async (request, response) => {
                 }
             });
         if (isUserJury) {
-            response.send(`Address ${request.query['address']} doesn't belong to jury list`);
+            response.send(`Address ${request.query['address']} belongs to jury list`);
         }
 
-        response.send(`Address ${request.query['address']} belongs to jury list`);
+        response.send(`Address ${request.query['address']} doesn't belong to jury list`);
     }
 
     response.sendFile(`${__dirname}/templates/spectator.html`);
@@ -158,7 +158,7 @@ async function getEvaluationSum() {
 }
 
 // TODO for jury
-// login
+// login as jury
 // evaluate
 // reveal
 // endEvaluation
