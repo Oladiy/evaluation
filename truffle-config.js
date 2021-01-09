@@ -2,7 +2,14 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 const infuraKey = "4bd54433f50140e291db1b47cce3cb94";
 
 const fs = require('fs');
-const rinkebyMnemonic = fs.readFileSync(".secret").toString().trim();
+let rinkebyMnemonic;
+try {
+    rinkebyMnemonic = fs.readFileSync(".secret").toString().trim();
+} catch (err) {
+    if (err.code !== 'ENOENT') {
+        console.log(err);
+    }
+}
 
 module.exports = {
   networks: {
